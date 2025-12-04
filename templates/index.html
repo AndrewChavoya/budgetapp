@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-5 text-primary">
+            <i class="fas fa-tachometer-alt"></i> Welcome to Your Budget Dashboard
+        </h1>
+        <p class="lead">Track your income, expenses, and stay in control.</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5><i class="fas fa-arrow-up"></i> Total Income</h5>
+                <h3>${{ "%.2f"|format(summary.total_income) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger mb-3">
+            <div class="card-body">
+                <h5><i class="fas fa-arrow-down"></i> Total Expenses</h5>
+                <h3>${{ "%.2f"|format(summary.total_expenses) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white {% if summary.balance >= 0 %}bg-primary{% else %}bg-warning{% endif %} mb-3">
+            <div class="card-body">
+                <h5><i class="fas fa-balance-scale"></i> Balance</h5>
+                <h3>${{ "%.2f"|format(summary.balance) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3 class="mt-5"><i class="fas fa-tags"></i> Spending by Category</h3>
+<div class="row">
+    {% if categories %}
+        {% for cat, limit in categories.items() %}
+        {% set spent = spending.get(cat, 0) %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card card-hover border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">{{ cat }}</h5>
+                    <p class="card-text">
+                        <strong>Spent:</strong> ${{ "%.2f"|format(spent) }}<br>
+                        {% if limit %}
+                            <strong>Limit:</strong> ${{ "%.2f"|format(limit) }} 
+                            <span class="badge {% if spent > limit %}bg-danger{% else %}bg-success{% endif %}">
+                                {% if spent > limit %}Over{% else %}OK{% endif %}
+                            </span>
+                        {% else %}
+                            <em>No limit set</em>
+                        {% endif %}
+                    </p>
+                    <div class="progress">
+                        {% if limit %}
+                            {% set percent = (spent / limit * 100) if limit > 0 else 0 %}
+                            <div class="progress-bar {% if percent > 90 %}bg-danger{% elif percent > 70 %}bg-warning{% else %}bg-success{% endif %}"
+                                 style="width: {{ percent|round(0) }}%">{{ percent|round(0) }}%</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No categories yet. <a href="{{ url_for('categories_page') }}">Add one</a> to get started!</p>
+    {% endif %}
+</div>
+{% endblock %}
